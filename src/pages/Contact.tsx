@@ -115,7 +115,7 @@ export const Contact: React.FC = () => {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="btn-3d w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 "
+                className={`btn-3d w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 ${loading ? 'loading' : ''}`}
               >
                 {loading ? 'SENDING...' : (
                   <>

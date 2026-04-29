@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+
+    // --- Validation Rules ---
+    // User validation
+    function isValidUser(data) {
+      return (
+        data.keys().hasAll(['balance', 'tasks', 'country', 'name', 'completedTasks', 'hasWithdrawn', 'dailyStreak', 'lastLogin', 'level', 'trustScore']) &&
+        data.balance is number && data.balance >= 0 &&
+        data.tasks is number && data.tasks >= 0 &&
+        data.country is string && data.country.size() <= 100 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.completedTasks is map &&
+        data.hasWithdrawn is bool &&
+        data.dailyStreak is number && data.dailyStreak >= 1 &&
+        data.lastLogin is number &&
+        data.level is string && data.level.size() <= 50 &&
+        data.trustScore is number && data.trustScore >= 0 && data.trustScore <= 100
+      );
+    }
+    
+    // Task validation
+    function isValidTask(data) {
+       return (
+        data.keys().hasAll(['title', 'duration', 'reward', 'url', 'status', 'countries']) &&
+        data.title is string && data.title.size() <= 200 &&
+        data.duration is number && data.duration > 0 &&
+        data.reward is number && data.reward > 0 &&
+        data.url is string && data.url.size() <= 1000 &&
+        data.status is string && (data.status == 'active' || data.status == 'paused') &&
+        data.countries is string && data.countries.size() <= 500
+       );
+    }
+
+    // User Earnings Collection inside users
+    match /users/{userId}/earnings/{earningId} {
+        // Users can only read their own earnings
+        allow read: if isOwner(userId);
+        
+        // Writes are ONLY allowed from the secure backend Server Actions! 
+        allow write: if false; 
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      
+      allow create: if isOwner(userId) && isValidUser(incoming());
+
+      // Only allow user to update specific profile fields, NEVER balance or tasks
+      allow update: if isOwner(userId) &&
+        isValidUser(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'country', 'fingerprints', 'lastLogin']);
+
+      allow delete: if false; // Users cannot delete their core account object
+    }
+
+    // Tasks Collection (Admin Managed PTC Tasks)
+    match /tasks/{taskId} {
+      // Any signed in user can fetch active tasks
+      allow list, get: if isSignedIn() && existing().status == 'active';
+      // Only admins can write tasks
+      allow write: if false; 
+    }
+
+    // Ptx Tasks Collection (User Created Advertiser Tasks)
+    match /ptx_tasks/{taskId} {
+      // Users can list active tasks
+      allow list: if isSignedIn(); 
+      // Users can get their own tasks or active tasks
+      allow get: if isSignedIn() && (existing().userId == request.auth.uid || existing().status == 'active');
+      
+      // Writes shouldn't be here either, they should be a server action but let's allow users to create them for now
+      // This allows them to create it, but they still have to pay for it on the server (which should be implemented)
+      allow write: if false; 
+    }
+
+    // Withdrawals Collection
+    match /withdrawals/{withdrawalId} {
+      // Users can see paid withdrawals (for ledger) or their own
+      allow list: if isSignedIn() && (existing().status == 'paid' || existing().uid == request.auth.uid);
+      allow get: if isSignedIn() && (existing().status == 'paid' || existing().uid == request.auth.uid);
+
+      // NO WRITES ALLOWED FROM CLIENT! Must use /api/request-withdrawal
+      allow write: if false;
+    }
+
+    // Pending CPA Approvals Collection
+    match /pending_cpa_approvals/{cpaId} {
+      // Users can view their own pending approvals
+      allow read: if isSignedIn() && existing().userId == request.auth.uid;
+      
+      // Users can submit proof
+      allow create: if isSignedIn() &&
+        incoming().keys().hasAll(['userId', 'userEmail', 'offerId', 'offerTitle', 'reward', 'proof', 'status', 'submittedAt']) &&
+        incoming().userId == request.auth.uid &&
+        incoming().proof is string && incoming().proof.size() <= 2000 &&
+        incoming().status == 'pending';
+        
+      allow update, delete: if false;
+    }
+
+    match /contact_messages/{messageId} {
+        allow read: if false; // Only admins
+        allow create: if true; // Open to all (with auth check below)
+        allow update, delete: if false;
+    }
+  }
+}

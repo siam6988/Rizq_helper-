@@ -17,6 +17,8 @@ export interface UserData {
   level: 'Bronze' | 'Silver' | 'Gold';
   trustScore: number;
   fingerprints: string[];
+  isVIP?: boolean;
+  vipExpiryDate?: number;
 }
 
 interface AuthContextType {
@@ -99,7 +101,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         await setDoc(userRef, data);
       } else {
-        data = snap.data() as UserData;
+        const rawData = snap.data() as any;
+        data = {
+          ...rawData,
+          balance: Number(rawData.balance) || 0,
+          tasks: Number(rawData.tasks) || 0,
+          dailyStreak: Number(rawData.dailyStreak) || 1,
+          trustScore: Number(rawData.trustScore) || 100,
+        } as UserData;
         
         let needsUpdate = false;
         const updates: Partial<UserData> = {};

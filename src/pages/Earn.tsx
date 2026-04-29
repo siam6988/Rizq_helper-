@@ -183,7 +183,7 @@ export const Earn: React.FC = () => {
                       <div className="flex items-center gap-4 text-sm font-semibold">
                         <span className="text-yellow-500 bg-yellow-500/20 px-3 py-1 rounded-md">Up to {task.duration / 60} Mins</span>
                         {multiplier > 1 && task.available && (
-                          <span className="text-yellow-500 text-xs">+{((task.finalReward - task.reward)).toFixed(2)} Bonus</span>
+                          <span className="text-yellow-500 text-xs">+{((Number(task.finalReward) - Number(task.reward)) || 0).toFixed(2)} Bonus</span>
                         )}
                       </div>
                     </div>
@@ -191,7 +191,7 @@ export const Earn: React.FC = () => {
                     <div className="flex items-center gap-5 justify-between md:justify-end border-t md:border-t-0 border-white/10 pt-4 md:pt-0">
                       <div className="text-left md:text-right">
                         <p className="text-sm font-bold text-text-dim uppercase tracking-widest mb-1">Max Reward</p>
-                        <p className="text-yellow-500 text-2xl font-black drop-shadow-[0_2px_5px_rgba(234,179,8,0.3)]">+{task.finalReward.toFixed(2)}</p>
+                        <p className="text-yellow-500 text-2xl font-black drop-shadow-[0_2px_5px_rgba(234,179,8,0.3)]">+{Number(task.finalReward || 0).toFixed(2)}</p>
                       </div>
                       {task.available ? (
                         <button 
@@ -237,7 +237,7 @@ export const Earn: React.FC = () => {
                   <div className="flex items-center gap-5 justify-between md:justify-end border-t md:border-t-0 border-white/10 pt-4 md:pt-0">
                     <div className="text-left md:text-right">
                       <p className="text-sm font-bold text-text-dim uppercase tracking-widest mb-1">Reward</p>
-                      <p className="text-primary-light text-2xl font-black drop-shadow-[0_2px_5px_rgba(16,185,129,0.3)]">+{task.finalReward.toFixed(2)}</p>
+                      <p className="text-primary-light text-2xl font-black drop-shadow-[0_2px_5px_rgba(16,185,129,0.3)]">+{Number(task.finalReward || 0).toFixed(2)}</p>
                     </div>
                     {task.available ? (
                       <button 

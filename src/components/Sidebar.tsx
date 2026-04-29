@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { auth } from '../services/firebase';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, Wallet, CreditCard, Users, User, LogOut, X, Trophy, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Wallet, CreditCard, Users, User, LogOut, X, Trophy, Megaphone, Crown, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> = ({ isOpen, toggleSidebar }) => {
@@ -43,11 +43,17 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> =
         <NavLink to="/advertiser" onClick={toggleSidebar} className={navClass}>
           <Megaphone size={20} /> Advertiser Panel
         </NavLink>
+        <NavLink to="/cpa-offers" onClick={toggleSidebar} className={navClass}>
+          <Target size={20} /> CPA Offers
+        </NavLink>
         <NavLink to="/withdraw" onClick={toggleSidebar} className={navClass}>
           <CreditCard size={20} /> Withdraw
         </NavLink>
         <NavLink to="/refer" onClick={toggleSidebar} className={navClass}>
           <Users size={20} /> Referrals
+        </NavLink>
+        <NavLink to="/membership" onClick={toggleSidebar} className={navClass}>
+          <Crown size={20} /> VIP Membership
         </NavLink>
         <NavLink to="/profile" onClick={toggleSidebar} className={navClass}>
           <User size={20} /> Profile

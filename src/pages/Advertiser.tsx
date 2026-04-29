@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { db, auth } from '../services/firebase';
-import { collection, addDoc, doc, updateDoc, increment } from 'firebase/firestore';
+import { auth } from '../services/firebase';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { isHaram } from '../utils/haramBlocker';
+import { z } from 'zod';
+
+const advertiserSchema = z.object({
+  adTitle: z.string().min(5, "Title must be at least 5 characters"),
+  adUrl: z.string().url("Must be a valid URL starting with http:// or https://"),
+  adDuration: z.number().min(5, "Minimum duration is 5 seconds"),
+  adViews: z.number().min(10, "Minimum views is 10"),
+  rewardPerView: z.number().min(0.01, "Minimum reward is 0.01 ISLM"),
+});
 
 export const Advertiser: React.FC = () => {
   const { userData, refreshUserData } = useAuth();
@@ -12,33 +20,40 @@ export const Advertiser: React.FC = () => {
   const [adUrl, setAdUrl] = useState('https://yourwebsite.com');
   const [adDuration, setAdDuration] = useState('15');
   const [adViews, setAdViews] = useState('');
+  const [rewardPerView, setRewardPerView] = useState('0.1');
   const [loading, setLoading] = useState(false);
   const [aiScanning, setAiScanning] = useState(false);
+  const [lastSubmit, setLastSubmit] = useState(0);
 
-  // Pricing:
-  // 15 seconds = 0.5 Balance per view
-  // 30 seconds = 1.0 Balance per view
-  // 60 seconds = 2.0 Balance per view
+  const parsedReward = parseFloat(rewardPerView) || 0;
+  const parsedViews = parseInt(adViews) || 0;
+  const parsedDuration = parseInt(adDuration) || 0;
   
-  const getCostPerView = (duration: string) => {
-    switch (duration) {
-      case '15': return 0.5;
-      case '30': return 1.0;
-      case '60': return 2.0;
-      default: return 0.5;
-    }
-  };
-
-  const costPerView = getCostPerView(adDuration);
-  const totalCost = (parseInt(adViews) || 0) * costPerView;
+  const subTotal = parsedReward * parsedViews;
+  const adminFee = subTotal * 0.20;
+  const totalCost = subTotal + adminFee;
 
   const handleCreateAd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adTitle || !adUrl || !adViews || parseInt(adViews) < 10) {
-      return toast.error("Please fill all fields. Minimun 10 views required.");
+    const now = Date.now();
+    if (now - lastSubmit < 2000) {
+      toast.error('Please wait a moment before submitting again.');
+      return;
     }
-    if (!adUrl.startsWith('http://') && !adUrl.startsWith('https://')) {
-      return toast.error("URL must start with http:// or https://");
+
+    try {
+      advertiserSchema.parse({
+        adTitle,
+        adUrl,
+        adDuration: parsedDuration,
+        adViews: parsedViews,
+        rewardPerView: parsedReward
+      });
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        toast.error(err.errors[0].message);
+      }
+      return;
     }
 
     if (!userData || !auth.currentUser) return;
@@ -48,41 +63,41 @@ export const Advertiser: React.FC = () => {
     }
 
     setAiScanning(true);
+    setLoading(true);
+    setLastSubmit(now);
     
     // Simulate AI Scanner Delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     if (isHaram(adTitle) || isHaram(adUrl)) {
       setAiScanning(false);
+      setLoading(false);
       return toast.error("🚨 AI Sentinel Blocked Ad! Haram Content Detected! No mercy 😊.");
     }
 
     setAiScanning(false);
-    setLoading(true);
 
     try {
-      // Create campaign in globally available tasks collection
-      // Ad admin handles ~20% cut for business logic, 80% goes to users.
-      // So reward to user will be costPerView * 0.8;
-      const userReward = costPerView * 0.8;
-      
-      await addDoc(collection(db, "ptx_tasks"), {
-        title: adTitle,
-        url: adUrl,
-        duration: parseInt(adDuration),
-        reward: userReward,
-        totalViews: parseInt(adViews),
-        currentViews: 0,
-        advertiserId: auth.currentUser.uid,
-        createdAt: Date.now(),
-        status: 'active'
+      const response = await fetch('/api/create-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: auth.currentUser.uid,
+          title: adTitle,
+          url: adUrl,
+          duration: parsedDuration,
+          views: parsedViews,
+          rewardPerView: parsedReward
+        })
       });
 
-      // Deduct balance
-      const userRef = doc(db, 'users', auth.currentUser.uid);
-      await updateDoc(userRef, { balance: increment(-totalCost) });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create campaign");
+      }
       
-      toast.success("Campaign created successfully!");
+      toast.success("Campaign submitted for approval successfully!");
       setAdTitle('');
       setAdUrl('');
       setAdViews('');
@@ -102,13 +117,13 @@ export const Advertiser: React.FC = () => {
     >
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h2 className="text-3xl font-bold drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">Advertiser Panel</h2>
-          <p className="text-text-dim mt-2 font-medium">Create PTC campaigns to drive traffic</p>
+          <h2 className="text-3xl font-bold drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">P2P Halal Task Board</h2>
+          <p className="text-text-dim mt-2 font-medium">Create ethical PTC campaigns to drive traffic</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-text-dim mb-1 font-bold">Available Balance</p>
           <div className="text-2xl font-black text-primary-light">
-            {userData?.balance.toFixed(2)}
+            {Number(userData?.balance || 0).toFixed(2)}
           </div>
         </div>
       </div>
@@ -146,58 +161,73 @@ export const Advertiser: React.FC = () => {
               <p className="text-red-400 text-xs font-bold mt-1">⚠️ URL must start with http:// or https://</p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-semibold text-text-dim block mb-1">Duration (Seconds)</label>
+              <label className="text-sm font-semibold text-text-dim block mb-1">Duration</label>
               <select 
                 value={adDuration}
                 onChange={e => setAdDuration(e.target.value)}
                 className="custom-input p-3 w-full rounded-xl"
               >
-                <option value="15">15 Seconds</option>
-                <option value="30">30 Seconds</option>
-                <option value="60">60 Seconds</option>
+                <option value="15">15s</option>
+                <option value="30">30s</option>
+                <option value="60">60s</option>
               </select>
             </div>
             <div>
               <label className="text-sm font-semibold text-text-dim block mb-1">
-                Number of Views
+                Reward / View
+              </label>
+              <input 
+                type="number" 
+                value={rewardPerView}
+                onChange={e => setRewardPerView(e.target.value)}
+                placeholder="0.1"
+                step="0.01"
+                min="0.01"
+                className="custom-input p-3 w-full rounded-xl transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-text-dim block mb-1">
+                Views Needed
               </label>
               <input 
                 type="number" 
                 value={adViews}
                 onChange={e => setAdViews(e.target.value)}
                 placeholder="10"
-                min="1"
-                className={`custom-input p-3 w-full rounded-xl transition-colors ${parseInt(adViews) < 10 && adViews !== '' ? 'border-yellow-500/50 focus:border-yellow-500' : ''}`}
+                min="10"
+                className={`custom-input p-3 w-full rounded-xl transition-colors ${parsedViews < 10 && adViews !== '' ? 'border-yellow-500/50 focus:border-yellow-500' : ''}`}
               />
-              {parseInt(adViews) < 10 && adViews !== '' && (
-                 <p className="text-yellow-500 text-xs font-bold mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Minimum requirement is 10 views</p>
-              )}
             </div>
           </div>
+          
+          {parsedViews < 10 && adViews !== '' && (
+            <p className="text-yellow-500 text-xs font-bold mt-1 flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Minimum requirement is 10 views</p>
+          )}
 
           <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-end mt-6 gap-6">
             <div className="space-y-1">
               <p className="text-sm text-text-dim font-bold uppercase tracking-widest">Rate details</p>
               <p className="text-white font-medium flex justify-between gap-4">
-                 <span>Cost Per View:</span>
-                 <span className="text-primary-light font-bold">{costPerView.toFixed(2)} pts</span>
+                 <span>Subtotal:</span>
+                 <span>{subTotal.toFixed(2)} ISLM</span>
               </p>
               <p className="text-white font-medium flex justify-between gap-4">
-                 <span>Total Views:</span>
-                 <span className="font-bold">{parseInt(adViews) || 0}</span>
+                 <span>Platform Fee (20%):</span>
+                 <span className="text-red-400">+{adminFee.toFixed(2)} ISLM</span>
               </p>
                <div className="h-px w-full bg-white/10 my-2"></div>
               <p className="text-lg text-white font-black flex justify-between gap-4">
                  <span>Total Cost:</span>
-                 <span className="text-yellow-500">{totalCost.toFixed(2)} pts</span>
+                 <span className="text-yellow-500">{totalCost.toFixed(2)} ISLM</span>
               </p>
             </div>
             <button 
               type="submit" 
               disabled={loading || aiScanning || totalCost > (userData?.balance || 0) || totalCost === 0 || !adUrl.startsWith('http')}
-              className="btn-3d px-8 py-3 rounded-2xl font-bold flex items-center justify-center min-w-[200px]"
+              className={`btn-3d px-8 py-3 rounded-2xl font-bold flex items-center justify-center min-w-[200px] ${loading ? 'loading' : ''}`}
             >
               {aiScanning ? (
                 <div className="flex items-center gap-2">

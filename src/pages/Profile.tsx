@@ -88,7 +88,7 @@ export const Profile: React.FC = () => {
         <button 
           onClick={saveProfile}
           disabled={loading}
-          className="btn-3d w-full mt-4 py-4 rounded-2xl text-sm"
+          className={`btn-3d w-full mt-4 py-4 rounded-2xl text-sm ${loading ? 'loading' : ''}`}
         >
           {loading ? 'SAVING...' : 'SAVE PROFILE'}
         </button>

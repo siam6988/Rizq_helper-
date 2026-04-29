@@ -5,20 +5,43 @@ import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { auth, db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { z } from 'zod';
+
+const authSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastSubmit, setLastSubmit] = useState(0);
   const navigate = useNavigate();
   const { user, loading: authLoading, country, deviceId, refreshUserData } = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return toast.error("Fields required");
+    
+    try {
+      authSchema.parse({ email, password });
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        toast.error(err.errors[0].message);
+      }
+      return;
+    }
+
     if (email.includes('+')) return toast.error("SECURITY ALERT: Alias emails are not allowed.");
 
+    const now = Date.now();
+    if (now - lastSubmit < 2000) {
+      toast.error('Please wait a moment before trying again.');
+      return;
+    }
+    
+    setLastSubmit(now);
     setLoading(true);
     try {
       if (isLogin) {
@@ -95,7 +118,7 @@ export const Auth: React.FC = () => {
         <button 
           type="submit" 
           disabled={loading}
-          className="btn-3d w-full mt-2 py-4 rounded-2xl text-sm"
+          className={`btn-3d w-full mt-2 py-4 rounded-2xl text-sm ${loading ? 'loading' : ''}`}
         >
           {loading ? 'PLEASE WAIT...' : 'CONTINUE'}
         </button>

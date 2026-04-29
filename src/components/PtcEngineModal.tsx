@@ -5,12 +5,19 @@ export const PtcEngineModal: React.FC = () => {
   const { ptcState, cancelTask, submitTask } = usePTC();
   const [ansStr, setAnsStr] = useState<string>('');
   const [claiming, setClaiming] = useState(false);
+  const [lastSubmit, setLastSubmit] = useState(0);
 
   if (!ptcState.active) return null;
 
   const handleClaim = async () => {
+    const now = Date.now();
+    if (now - lastSubmit < 2000) {
+      toast.error('Please wait a moment before clicking claim again.');
+      return;
+    }
+    setLastSubmit(now);
     setClaiming(true);
-    await submitTask(parseInt(ansStr));
+    await submitTask();
     setClaiming(false);
     setAnsStr(''); // reset
   };
@@ -52,7 +59,7 @@ export const PtcEngineModal: React.FC = () => {
             <button 
               onClick={handleClaim}
               disabled={claiming}
-              className="btn-3d w-full py-4 rounded-2xl text-sm"
+              className={`btn-3d w-full py-4 rounded-2xl text-sm ${claiming ? 'loading' : ''}`}
             >
               {claiming ? 'VERIFYING...' : 'VERIFY & CLAIM'}
             </button>

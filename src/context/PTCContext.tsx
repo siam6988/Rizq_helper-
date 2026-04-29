@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, increment, collection, addDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 
@@ -33,7 +31,7 @@ export const usePTC = () => {
 };
 
 export const PTCProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, refreshUserData } = useAuth();
+  const { user, userData, refreshUserData } = useAuth();
   const [ptcState, setPtcState] = useState<PTCState>({
     active: false, taskId: '', reward: 0, duration: 0, remaining: 0, elapsed: 0, verifyMode: false, captchaToken: null, taskType: 'standard'
   });
@@ -159,26 +157,25 @@ export const PTCProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     if (!user) return;
 
-    const finalReward = ptcState.taskType === 'dynamic' 
-      ? Number((ptcState.elapsed * 0.01).toFixed(2)) 
-      : ptcState.reward;
-
     try {
-      const userRef = doc(db, "users", user.uid);
-      const updateData: any = { 
-        balance: increment(finalReward), 
-        tasks: increment(1) 
-      };
-      updateData[`completedTasks.${ptcState.taskId}`] = Date.now();
-      
-      await updateDoc(userRef, updateData);
-      
-      await addDoc(collection(db, "users", user.uid, "earnings"), {
-        type: 'task',
-        taskId: ptcState.taskId,
-        amount: finalReward,
-        timestamp: Date.now()
+      const response = await fetch('/api/claim-reward', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+            uid: user.uid,
+            taskId: ptcState.taskId,
+            duration: ptcState.elapsed, // dynamic duration
+            captchaAnswer: parseInt(mathAnswer)
+         })
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         throw new Error(data.error || "Failed to claim reward");
+      }
+
+      const finalReward = data.reward;
       
       toast.success(`Mission Success! +${finalReward.toFixed(2)} added.`);
       setPtcState({ active: false, taskId: '', reward: 0, duration: 0, remaining: 0, elapsed: 0, verifyMode: false, captchaToken: null, taskType: 'standard' });
@@ -219,7 +216,7 @@ export const PTCProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 </div>
                 <p className="text-text-dim text-xs uppercase tracking-widest font-bold mb-2">Accumulated Reward</p>
                 <p className="text-6xl font-black text-yellow-500 drop-shadow-[0_0_20px_rgba(234,179,8,0.6)] tabular-nums">
-                  {(ptcState.elapsed * 0.01).toFixed(2)} <span className="text-2xl text-yellow-500/80">ISLM</span>
+                  {(Number(ptcState.elapsed || 0) * 0.01).toFixed(2)} <span className="text-2xl text-yellow-500/80">ISLM</span>
                 </p>
               </div>
 
@@ -228,7 +225,7 @@ export const PTCProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   onClick={() => setPtcState(prev => ({...prev, verifyMode: true}))} 
                   className="btn-3d w-full py-4 rounded-xl text-lg font-bold animate-in fade-in zoom-in"
                 >
-                  CLAIM REWARD ({(ptcState.elapsed * 0.01).toFixed(2)})
+                  CLAIM REWARD ({(Number(ptcState.elapsed || 0) * 0.01).toFixed(2)})
                 </button>
               )}
 
@@ -290,7 +287,7 @@ export const PTCProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 disabled={!mathAnswer}
                 className="btn-3d w-full py-4 rounded-xl text-lg font-bold disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all"
               >
-                VERIFY & CLAIM {ptcState.taskType === 'dynamic' ? (ptcState.elapsed * 0.01).toFixed(2) : ptcState.reward.toFixed(2)}
+                VERIFY & CLAIM {ptcState.taskType === 'dynamic' ? (Number(ptcState.elapsed || 0) * 0.01).toFixed(2) : Number(ptcState.reward || 0).toFixed(2)}
               </button>
             </div>
           )}

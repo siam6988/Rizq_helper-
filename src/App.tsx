@@ -6,7 +6,6 @@ import { PTCProvider } from './context/PTCContext';
 import { VpnBlocker } from './components/VpnBlocker';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
-import { PtcEngineModal } from './components/PtcEngineModal';
 
 import { Home } from './pages/Home';
 import { Auth } from './pages/Auth';
@@ -17,7 +16,9 @@ import { Profile } from './pages/Profile';
 import { Refer } from './pages/Refer';
 import { Leaderboard } from './pages/Leaderboard';
 import { Advertiser } from './pages/Advertiser';
+import { CPAOffers } from './pages/CPAOffers';
 import { Offerwalls } from './pages/Offerwalls';
+import { Membership } from './pages/Membership';
 import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Contact } from './pages/Contact';
@@ -39,7 +40,6 @@ const LayoutContainer = ({ children }: { children: React.ReactNode }) => {
       <main className="max-w-6xl mx-auto p-5 py-10 relative z-10">
         {children}
       </main>
-      <PtcEngineModal />
     </>
   );
 };
@@ -72,6 +72,8 @@ export default function App() {
                 <Route path="/refer" element={<PrivateRoute><Refer /></PrivateRoute>} />
                 <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
                 <Route path="/advertiser" element={<PrivateRoute><Advertiser /></PrivateRoute>} />
+                <Route path="/membership" element={<PrivateRoute><Membership /></PrivateRoute>} />
+                <Route path="/cpa-offers" element={<PrivateRoute><CPAOffers /></PrivateRoute>} />
                 <Route path="/offerwalls" element={<PrivateRoute><Offerwalls /></PrivateRoute>} />
               </Routes>
             </LayoutContainer>

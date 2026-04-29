@@ -13,6 +13,9 @@ interface EarningRecord {
   referredUser?: string;
 }
 
+import { TransparentLedger } from '../components/TransparentLedger';
+import { AdBanner } from '../components/AdBanner';
+
 export const Dashboard: React.FC = () => {
   const { userData } = useAuth();
   const [history, setHistory] = useState<EarningRecord[]>([]);
@@ -57,7 +60,7 @@ export const Dashboard: React.FC = () => {
           <div className="h-16 w-48 bg-white/20 animate-pulse rounded-2xl relative z-10"></div>
         ) : (
           <h1 className="text-6xl text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] font-bold relative z-10">
-            {userData.balance.toFixed(2)}
+            {Number(userData.balance || 0).toFixed(2)}
           </h1>
         )}
       </div>
@@ -124,13 +127,19 @@ export const Dashboard: React.FC = () => {
                     </p>
                     </div>
                     <div className="text-primary-light font-black text-xl drop-shadow-[0_2px_5px_rgba(16,185,129,0.3)]">
-                    +{record.amount.toFixed(2)}
+                    +{Number(record.amount || 0).toFixed(2)}
                     </div>
                 </motion.div>
                 ))}
             </AnimatePresence>
           </div>
         )}
+      </div>
+
+      <AdBanner slot="dashboard_mid" className="mt-6 mb-6 h-28" />
+
+      <div className="mt-6">
+        <TransparentLedger />
       </div>
     </motion.div>
   );
