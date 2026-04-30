@@ -1,12 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Twitter, Facebook, MessageCircle, Send } from 'lucide-react';
+import { Twitter, Facebook, MessageCircle, Send, Users, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
 export const Refer: React.FC = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState({ totalSignedUp: 0, totalWithdrawn: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
+
   const refLink = user ? `${window.location.origin}/auth?ref=${user.uid}` : 'Login to get your referral link';
+
+  useEffect(() => {
+    if (!user) {
+      setLoadingStats(false);
+      return;
+    }
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`/api/referral-stats/${user.uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          setStats({
+            totalSignedUp: data.totalSignedUp || 0,
+            totalWithdrawn: data.totalWithdrawn || 0,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch referral stats", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, [user]);
 
   const copyRef = () => {
     if (!user) return toast.error("Please login first!");
@@ -41,6 +68,23 @@ export const Refer: React.FC = () => {
       <p className="text-text-dim text-base leading-relaxed font-semibold mb-8">
         Earn a <b>10% commission</b> exclusively when your invited friend makes their <b>FIRST withdrawal!</b>
       </p>
+      
+      {/* Referral Stats Tracker */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
+          <Users className="w-8 h-8 text-blue-400 mb-2 opacity-80" />
+          <h3 className="text-3xl font-black text-white">{loadingStats ? '-' : stats.totalSignedUp}</h3>
+          <p className="text-text-dim text-xs font-bold uppercase mt-1 text-center">Friends<br/>Joined</p>
+        </div>
+        <div className="bg-black/20 p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-2 opacity-5">
+            <CheckCircle className="w-12 h-12" />
+          </div>
+          <CheckCircle className="w-8 h-8 text-primary-light mb-2 opacity-80" />
+          <h3 className="text-3xl font-black text-white">{loadingStats ? '-' : stats.totalWithdrawn}</h3>
+          <p className="text-text-dim text-xs font-bold uppercase mt-1 text-center">First<br/>Withdrawals</p>
+        </div>
+      </div>
       
       <input 
         type="text"

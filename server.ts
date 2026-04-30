@@ -294,6 +294,35 @@ async function startServer() {
     }
   });
 
+  // 4. Referral Stats Endpoint
+  app.get('/api/referral-stats/:uid', async (req, res) => {
+    try {
+      const uid = req.params.uid;
+      if (!uid) return res.status(400).json({ error: "No UID provided" });
+
+      const usersRef = adminDb.collection('users');
+      const snapshot = await usersRef.where('refBy', '==', uid).get();
+
+      let totalSignedUp = snapshot.size;
+      let totalWithdrawn = 0;
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.hasWithdrawn) {
+          totalWithdrawn++;
+        }
+      });
+
+      return res.status(200).json({
+        totalSignedUp,
+        totalWithdrawn
+      });
+    } catch(e: any) {
+      console.error("Referral stats error:", e);
+      return res.status(500).json({ error: "Failed to fetch referral stats" });
+    }
+  });
+
   // === MANUAL CRYPTO DEPOSIT ===
   app.post('/api/submit-deposit', async (req, res) => {
     try {
