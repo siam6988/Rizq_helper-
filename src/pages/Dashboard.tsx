@@ -59,9 +59,12 @@ export const Dashboard: React.FC = () => {
         {!userData ? (
           <div className="h-16 w-48 bg-white/20 animate-pulse rounded-2xl relative z-10"></div>
         ) : (
-          <h1 className="text-6xl text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] font-bold relative z-10">
-            {Number(userData.balance || 0).toFixed(2)}
-          </h1>
+          <div className="relative z-10 flex items-end gap-3">
+            <h1 className="text-6xl text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] font-bold">
+              {Number(userData.balance || 0).toFixed(2)}
+            </h1>
+            <span className="text-2xl font-bold text-white/70 mb-2 tracking-wide">ISLM</span>
+          </div>
         )}
       </div>
 

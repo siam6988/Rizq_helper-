@@ -4,8 +4,8 @@ import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { usePTC } from '../context/PTCContext';
 import { motion } from 'framer-motion';
-
 import { filterHaramTasks } from '../utils/haramBlocker';
+import { AdBanner } from '../components/AdBanner';
 
 interface Task {
   id: string;
@@ -211,6 +211,8 @@ export const Earn: React.FC = () => {
               </div>
             </div>
           )}
+
+          <AdBanner slot="earn_mid" className="my-8" />
 
           {/* STANDARD TASKS */}
           {standardTasks.length > 0 && (

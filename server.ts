@@ -4,6 +4,11 @@ import { z } from 'zod';
 import { adminDb } from './src/services/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import path from 'path';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder_key', {
+  apiVersion: '2023-10-16' as any
+});
 
 // Schema for request validation
 const ClaimRewardSchema = z.object({
@@ -17,7 +22,7 @@ const WithdrawSchema = z.object({
   uid: z.string().min(1),
   amount: z.number().min(28),
   address: z.string().min(10),
-  coin: z.enum(['BTC', 'SOL', 'ISLM'])
+  coin: z.literal('ISLM')
 });
 
 const CampaignSchema = z.object({
@@ -255,6 +260,68 @@ async function startServer() {
           return res.status(400).json({ error: "Invalid payload parameters: " + error.issues.map((e: any) => e.message).join(", ") });
         }
         return res.status(400).json({ error: error.message || "Failed to create campaign" });
+    }
+  });
+
+  // === STRIPE PAYMENTS ===
+  app.post('/api/create-checkout-session', async (req, res) => {
+    try {
+      const { uid, amountISLM } = req.body;
+      if (!uid || !amountISLM || amountISLM < 10) return res.status(400).json({ error: "Invalid amount. Minimum 10 ISLM" });
+      
+      // Assume 1 ISLM = $0.05
+      const costUSD = amountISLM * 0.05;
+      
+      const session = await stripe.checkout.sessions.create({
+         payment_method_types: ['card'],
+         line_items: [{
+            price_data: {
+              currency: 'usd',
+              product_data: { name: `${amountISLM} ISLM` },
+              unit_amount: Math.round(costUSD * 100), // in cents
+            },
+            quantity: 1,
+         }],
+         mode: 'payment',
+         success_url: `${req.headers.origin}/store?success=true&session_id={CHECKOUT_SESSION_ID}`,
+         cancel_url: `${req.headers.origin}/store?canceled=true`,
+         client_reference_id: uid,
+         metadata: { uid, amountISLM: amountISLM.toString() }
+      });
+
+      res.json({ id: session.id, url: session.url });
+    } catch(e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post('/api/verify-session', async (req, res) => {
+    try {
+      const { session_id } = req.body;
+      const session = await stripe.checkout.sessions.retrieve(session_id);
+      
+      if (session.payment_status === 'paid') {
+         const uid = session.client_reference_id;
+         const amountISLM = Number(session.metadata?.amountISLM || 0);
+
+         if (!uid || !amountISLM) return res.status(400).json({ error: "Invalid session metadata" });
+
+         await adminDb.runTransaction(async (t) => {
+            const logRef = adminDb.collection('purchases').doc(session_id);
+            const logDoc = await t.get(logRef);
+            if (logDoc.exists) return; // Already credited
+
+            const userRef = adminDb.collection('users').doc(uid);
+            t.update(userRef, { balance: FieldValue.increment(amountISLM) });
+            t.set(logRef, { uid, amountISLM, timestamp: Date.now() });
+         });
+
+         res.json({ success: true, amountISLM });
+      } else {
+         res.status(400).json({ error: "Not paid" });
+      }
+    } catch(e: any) {
+      res.status(500).json({ error: e.message });
     }
   });
 

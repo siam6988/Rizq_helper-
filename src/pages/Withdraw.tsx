@@ -14,7 +14,6 @@ export const Withdraw: React.FC = () => {
   const { userData, refreshUserData } = useAuth();
   const [amount, setAmount] = useState('');
   const [address, setAddress] = useState('');
-  const [coin, setCoin] = useState('BTC');
   const [loading, setLoading] = useState(false);
   const [lastSubmit, setLastSubmit] = useState(0);
 
@@ -49,7 +48,7 @@ export const Withdraw: React.FC = () => {
             uid: auth.currentUser.uid,
             amount: amt,
             address: address,
-            coin: coin
+            coin: 'ISLM'
          })
       });
 
@@ -80,23 +79,10 @@ export const Withdraw: React.FC = () => {
       
       <div className="space-y-5">
         <div>
-          <label className="text-primary-light font-bold text-sm block mb-2">Select Coin</label>
-          <select 
-            value={coin} 
-            onChange={(e) => setCoin(e.target.value)}
-            className="custom-input p-4 rounded-xl w-full font-bold text-base"
-          >
-            <option value="BTC">Bitcoin (BTC)</option>
-            <option value="SOL">Solana (SOL)</option>
-            <option value="ISLM">Islamic Coin (ISLM)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-primary-light font-bold text-sm block mb-2">Wallet Address</label>
+          <label className="text-primary-light font-bold text-sm block mb-2">Wallet Address (ISLM only)</label>
           <input 
             type="text"
-            placeholder="Enter Wallet Address"
+            placeholder="Enter HAQQ Wallet Address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className="custom-input p-4 rounded-xl w-full font-bold text-base"

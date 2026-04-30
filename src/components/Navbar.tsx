@@ -44,7 +44,8 @@ export const Navbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar 
              <div className="hidden md:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-xl border border-white/5">
                 <Wallet className="w-4 h-4 text-primary-light" />
                 <span className="text-white font-black">{Number.isNaN(userData?.balance) ? '0.00' : (userData?.balance?.toFixed(2) || '0.00')}</span>
-                <span className="text-text-dim text-xs font-bold uppercase">ISLM</span>
+                <span className="text-text-dim text-xs font-bold uppercase mr-2">ISLM</span>
+                <Link to="/store" className="bg-primary-light/20 text-primary-light text-xs font-bold px-2 py-1 rounded hover:bg-primary-light hover:text-black transition-colors">Buy</Link>
              </div>
              
              <div className={`hidden sm:flex items-center gap-1 font-bold text-xs uppercase px-2 py-1 rounded-md border ${

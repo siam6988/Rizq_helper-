@@ -18,7 +18,7 @@ export const Home: React.FC = () => {
         <span className="text-primary-light">Crypto Rewards.</span>
       </h1>
       <p className="text-text-dim text-lg font-semibold mx-auto mb-10 max-w-xl drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">
-        Complete tasks, earn rewards, and withdraw instantly via BTC, SOL or ISLM.
+        Complete tasks, earn rewards, and withdraw instantly via ISLM.
       </p>
       <Link to="/auth" className="btn-3d inline-block px-8 py-4 rounded-2xl text-lg relative z-10">
         START EARNING

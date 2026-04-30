@@ -46,6 +46,9 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> =
         <NavLink to="/cpa-offers" onClick={toggleSidebar} className={navClass}>
           <Target size={20} /> CPA Offers
         </NavLink>
+        <NavLink to="/store" onClick={toggleSidebar} className={navClass}>
+          <CreditCard size={20} /> Purchase ISLM
+        </NavLink>
         <NavLink to="/withdraw" onClick={toggleSidebar} className={navClass}>
           <CreditCard size={20} /> Withdraw
         </NavLink>

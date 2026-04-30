@@ -11,12 +11,14 @@ export const AdBanner: React.FC<{ slot?: string; className?: string }> = ({ slot
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
       <div className="text-center relative z-10 w-full px-2 sm:px-4">
         <p className="text-text-dim text-[10px] sm:text-xs font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] mb-1 truncate">Advertisement</p>
-        <div className="flex items-center justify-center w-full">
-          {slot ? (
-             <p className="text-white/30 text-[10px] sm:text-xs md:text-sm font-mono truncate max-w-full">Slot: {slot}</p>
-          ) : (
-             <p className="text-white/30 text-[10px] sm:text-xs md:text-sm font-mono truncate max-w-full">Space available for AD</p>
-          )}
+        <div className="flex items-center justify-center w-full mt-2">
+           <div id="frame" style={{ width: '320px', margin: 'auto', zIndex: 99998, height: 'auto' }}>
+             <iframe 
+               data-aa='2436091' 
+               src='//ad.a-ads.com/2436091/?size=320x50&background_color=transparent&title_color=067b13&title_hover_color=0a3206&text_color=18208e&link_color=000000&link_hover_color=ffffff' 
+               style={{ border: 0, padding: 0, width: '320px', height: '50px', overflow: 'hidden', display: 'block', margin: 'auto' }}
+             ></iframe>
+           </div>
         </div>
       </div>
     </motion.div>

@@ -22,6 +22,7 @@ import { Membership } from './pages/Membership';
 import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Contact } from './pages/Contact';
+import { Store } from './pages/Store';
 
 // Layout wrapper for authenticated routes mapping
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -75,6 +76,7 @@ export default function App() {
                 <Route path="/membership" element={<PrivateRoute><Membership /></PrivateRoute>} />
                 <Route path="/cpa-offers" element={<PrivateRoute><CPAOffers /></PrivateRoute>} />
                 <Route path="/offerwalls" element={<PrivateRoute><Offerwalls /></PrivateRoute>} />
+                <Route path="/store" element={<Store />} />
               </Routes>
             </LayoutContainer>
           </BrowserRouter>
