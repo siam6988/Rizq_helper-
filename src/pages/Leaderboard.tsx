@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { motion } from 'framer-motion';
+import { AdBanner } from '../components/AdBanner';
 
 interface Leader {
   id: string;
@@ -15,6 +16,13 @@ export const Leaderboard: React.FC = () => {
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const formatName = (fullName: string) => {
+    if (!fullName) return 'Anonymous';
+    const parts = fullName.trim().split(' ');
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[parts.length - 1][0]}.`;
+  };
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
@@ -25,7 +33,7 @@ export const Leaderboard: React.FC = () => {
           const u = doc.data();
           data.push({
             id: doc.id,
-            name: u.name || 'Anonymous',
+            name: formatName(u.name),
             tasks: u.tasks || 0,
             balance: u.balance || 0,
             level: u.level || 'Bronze'
@@ -47,10 +55,14 @@ export const Leaderboard: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto"
     >
+      <AdBanner slot="leaderboard_top" className="mb-6" />
+
       <div className="text-center mb-10">
         <h2 className="text-4xl font-black text-white drop-shadow-[0_5px_15px_rgba(16,185,129,0.3)] mb-4">🏆 Top Earners</h2>
         <p className="text-text-dim text-lg font-medium">The most active users on RizQ Helper</p>
       </div>
+
+      <AdBanner slot="leaderboard_mid" className="mb-6" />
 
       <div className="glass-card p-2 rounded-[2rem] overflow-hidden">
         <div className="bg-white/5 rounded-[1.8rem] p-6">
@@ -98,6 +110,9 @@ export const Leaderboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      <AdBanner slot="leaderboard_bottom1" className="mt-8" />
+      <AdBanner slot="leaderboard_bottom2" className="mt-6" />
     </motion.div>
   );
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AdBanner } from '../components/AdBanner';
 
 export const Offerwalls: React.FC = () => {
   return (
@@ -8,6 +9,8 @@ export const Offerwalls: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-5xl mx-auto space-y-6"
     >
+      <AdBanner slot="offerwalls_top" className="mb-6" />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-border-glass pb-8">
         <div>
           <h2 className="text-4xl font-extrabold text-white drop-shadow-[0_5px_15px_rgba(16,185,129,0.3)] mb-3">Offerwalls</h2>
@@ -16,6 +19,8 @@ export const Offerwalls: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <AdBanner slot="offerwalls_mid" className="mb-6" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="glass-card p-8 rounded-3xl border border-white/10 hover:border-primary-light/30 transition-all group">
@@ -50,6 +55,10 @@ export const Offerwalls: React.FC = () => {
           <p className="text-text-dim text-sm">Watch short promotional videos and get paid automatically. Feature unlocks at Level Silver.</p>
         </div>
       </div>
+
+      <AdBanner slot="offerwalls_bottom1" className="mt-8" />
+      <AdBanner slot="offerwalls_bottom2" className="mt-6" />
+
     </motion.div>
   );
 };

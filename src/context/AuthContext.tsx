@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithCustomToken } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { runSecurityAndFetchCountry } from '../services/security';
@@ -71,6 +71,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       countryRef.current = detectedCountry;
       deviceRef.current = detectedDevice;
     });
+
+    const initTelegramAuth = async () => {
+      const twaUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+      if (twaUser) {
+        try {
+          const res = await fetch('/api/auth/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: twaUser })
+          });
+          const data = await res.json();
+          if (data.token) {
+            await signInWithCustomToken(auth, data.token);
+          }
+        } catch (e) {
+          console.error("Telegram Auto-Auth Error:", e);
+        }
+      }
+    };
+    initTelegramAuth();
   }, []);
 
   const refreshUserData = async () => {

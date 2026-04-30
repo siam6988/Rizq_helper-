@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { z } from 'zod';
-import { adminDb } from './src/services/firebaseAdmin.js';
+import { adminDb, adminAuth } from './src/services/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import path from 'path';
 import Stripe from 'stripe';
@@ -45,6 +45,37 @@ async function startServer() {
   app.use(express.json());
 
   // === SECURE API ROUTES ===
+
+  // 0. Telegram Auth Endpoint
+  app.post('/api/auth/telegram', async (req, res) => {
+    try {
+      const { user } = req.body;
+      if (!user || !user.id) {
+         return res.status(400).json({ error: "No Telegram User provided" });
+      }
+      
+      const uid = `telegram_${user.id}`;
+      // Verify user exists in Firestore, or create if not
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await userRef.get();
+      
+      if (!userDoc.exists) {
+         await userRef.set({
+           name: user.first_name + (user.last_name ? ' ' + user.last_name : ''),
+           balance: 0,
+           tasks: 0,
+           level: 'Bronze',
+           createdAt: Date.now()
+         });
+      }
+
+      const customToken = await adminAuth.createCustomToken(uid);
+      res.json({ token: customToken });
+    } catch(e: any) {
+      console.error("Telegram auth error:", e);
+      res.status(500).json({ error: e.message });
+    }
+  });
 
   // 1. Claim Reward Endpoint
   app.post('/api/claim-reward', async (req, res) => {
@@ -263,63 +294,28 @@ async function startServer() {
     }
   });
 
-  // === STRIPE PAYMENTS ===
-  app.post('/api/create-checkout-session', async (req, res) => {
+  // === MANUAL CRYPTO DEPOSIT ===
+  app.post('/api/submit-deposit', async (req, res) => {
     try {
-      const { uid, amountISLM } = req.body;
+      const { uid, amountISLM, txHash } = req.body;
       if (!uid || !amountISLM || amountISLM < 10) return res.status(400).json({ error: "Invalid amount. Minimum 10 ISLM" });
+      if (!txHash || txHash.length < 10) return res.status(400).json({ error: "Invalid Transaction Hash" });
       
-      // Assume 1 ISLM = $0.05
-      const costUSD = amountISLM * 0.05;
-      
-      const session = await stripe.checkout.sessions.create({
-         payment_method_types: ['card'],
-         line_items: [{
-            price_data: {
-              currency: 'usd',
-              product_data: { name: `${amountISLM} ISLM` },
-              unit_amount: Math.round(costUSD * 100), // in cents
-            },
-            quantity: 1,
-         }],
-         mode: 'payment',
-         success_url: `${req.headers.origin}/store?success=true&session_id={CHECKOUT_SESSION_ID}`,
-         cancel_url: `${req.headers.origin}/store?canceled=true`,
-         client_reference_id: uid,
-         metadata: { uid, amountISLM: amountISLM.toString() }
+      const logRef = adminDb.collection('deposits').doc(txHash);
+      const logDoc = await logRef.get();
+      if (logDoc.exists) {
+         return res.status(400).json({ error: "Transaction already submitted" });
+      }
+
+      await logRef.set({
+         uid,
+         amountISLM,
+         txHash,
+         status: 'pending', // Admins will review this manually or via a bot later
+         timestamp: Date.now()
       });
 
-      res.json({ id: session.id, url: session.url });
-    } catch(e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  });
-
-  app.post('/api/verify-session', async (req, res) => {
-    try {
-      const { session_id } = req.body;
-      const session = await stripe.checkout.sessions.retrieve(session_id);
-      
-      if (session.payment_status === 'paid') {
-         const uid = session.client_reference_id;
-         const amountISLM = Number(session.metadata?.amountISLM || 0);
-
-         if (!uid || !amountISLM) return res.status(400).json({ error: "Invalid session metadata" });
-
-         await adminDb.runTransaction(async (t) => {
-            const logRef = adminDb.collection('purchases').doc(session_id);
-            const logDoc = await t.get(logRef);
-            if (logDoc.exists) return; // Already credited
-
-            const userRef = adminDb.collection('users').doc(uid);
-            t.update(userRef, { balance: FieldValue.increment(amountISLM) });
-            t.set(logRef, { uid, amountISLM, timestamp: Date.now() });
-         });
-
-         res.json({ success: true, amountISLM });
-      } else {
-         res.status(400).json({ error: "Not paid" });
-      }
+      res.json({ success: true, message: "Deposit submitted for review" });
     } catch(e: any) {
       res.status(500).json({ error: e.message });
     }

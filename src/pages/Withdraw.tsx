@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { z } from 'zod';
+import { AdBanner } from '../components/AdBanner';
 
 const withdrawSchema = z.object({
   amount: z.number().min(28, "Minimum withdrawal is 28 ISLM"),
@@ -69,6 +70,8 @@ export const Withdraw: React.FC = () => {
   };
 
   return (
+    <>
+    <AdBanner slot="withdraw_top" className="mb-6 max-w-lg mx-auto" />
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -77,6 +80,8 @@ export const Withdraw: React.FC = () => {
       <h2 className="mb-4 text-3xl font-bold drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">Withdraw Funds</h2>
       <p className="text-text-dim text-sm font-semibold mb-8">Minimum: 28 ISLM</p>
       
+      <AdBanner slot="withdraw_mid1" className="mb-6" />
+
       <div className="space-y-5">
         <div>
           <label className="text-primary-light font-bold text-sm block mb-2">Wallet Address (ISLM only)</label>
@@ -109,6 +114,11 @@ export const Withdraw: React.FC = () => {
           {loading ? 'PROCESSING...' : 'REQUEST PAYOUT'}
         </button>
       </div>
+
+      <AdBanner slot="withdraw_mid2" className="mt-8" />
     </motion.div>
+    <AdBanner slot="withdraw_bottom1" className="mt-6 max-w-lg mx-auto" />
+    <AdBanner slot="withdraw_bottom2" className="mt-6 max-w-lg mx-auto" />
+    </>
   );
 };

@@ -5,6 +5,7 @@ import { doc, updateDoc, increment } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Crown, CheckCircle2, Zap } from 'lucide-react';
+import { AdBanner } from '../components/AdBanner';
 
 export const Membership: React.FC = () => {
   const { userData, refreshUserData } = useAuth();
@@ -46,6 +47,8 @@ export const Membership: React.FC = () => {
   };
 
   return (
+    <>
+    <AdBanner slot="membership_top" className="mb-6 max-w-3xl mx-auto" />
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -63,6 +66,8 @@ export const Membership: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <AdBanner slot="membership_mid" className="my-6" />
 
       <div className="glass-card p-10 rounded-3xl relative overflow-hidden border border-yellow-500/20">
         <div className="absolute top-0 right-0 p-8 opacity-10 text-yellow-500">
@@ -128,5 +133,8 @@ export const Membership: React.FC = () => {
         </div>
       </div>
     </motion.div>
+    <AdBanner slot="membership_bottom1" className="mt-6 max-w-3xl mx-auto" />
+    <AdBanner slot="membership_bottom2" className="mt-6 max-w-3xl mx-auto" />
+    </>
   );
 };

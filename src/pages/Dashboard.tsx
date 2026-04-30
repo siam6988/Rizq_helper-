@@ -51,6 +51,8 @@ export const Dashboard: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto space-y-6"
     >
+      <AdBanner slot="dashboard_top" className="mb-6" />
+
       <div className="stat-card p-10 rounded-3xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-20">
             <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -67,6 +69,8 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      <AdBanner slot="dashboard_mid1" className="mt-6 mb-6" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="glass-card p-8 rounded-3xl">
@@ -144,6 +148,9 @@ export const Dashboard: React.FC = () => {
       <div className="mt-6">
         <TransparentLedger />
       </div>
+
+      <AdBanner slot="dashboard_bottom" className="mt-6" />
+      <AdBanner slot="dashboard_bottom2" className="mt-6" />
     </motion.div>
   );
 };

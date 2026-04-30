@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AdBanner } from '../components/AdBanner';
 
 export const Privacy: React.FC = () => {
   return (
@@ -8,6 +9,8 @@ export const Privacy: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto space-y-8 pb-10"
     >
+      <AdBanner slot="privacy_top" className="mb-6" />
+
       <div className="text-center mb-10">
         <h1 className="text-4xl font-black text-white mb-4">Privacy Policy</h1>
         <p className="text-text-dim">Last updated: April 28, 2026</p>
@@ -40,6 +43,8 @@ export const Privacy: React.FC = () => {
           </ul>
         </section>
 
+        <AdBanner slot="privacy_mid1" className="my-6" />
+
         <section>
           <h2 className="text-2xl font-bold text-white mb-4">3. Data Sharing & Third Parties</h2>
           <p className="text-text-dim leading-relaxed mb-3">
@@ -65,7 +70,12 @@ export const Privacy: React.FC = () => {
             You have the right to request a complete deletion of your account and associated data. However, for fraud prevention, hashes of device fingerprints associated with banned accounts may be kept indefinitely to prevent future platform abuse. To request account deletion, contact our support team.
           </p>
         </section>
+
+        <AdBanner slot="privacy_mid2" className="my-6" />
       </div>
+
+      <AdBanner slot="privacy_bottom1" className="mt-8" />
+      <AdBanner slot="privacy_bottom2" className="mt-6" />
     </motion.div>
   );
 };

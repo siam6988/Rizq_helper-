@@ -127,6 +127,8 @@ export const Earn: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-5xl mx-auto space-y-10"
     >
+      <AdBanner slot="earn_top1" className="mb-6" />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-glass pb-8 mb-8">
         <div>
           <h2 className="text-3xl font-bold drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">Earn Station</h2>
@@ -163,6 +165,7 @@ export const Earn: React.FC = () => {
         <div className="text-text-dim text-lg text-center p-10 glass-card rounded-2xl border-dashed border-2 border-white/20">No tasks available for your country right now. Come back later!</div>
       ) : (
         <div className="space-y-10">
+          <AdBanner slot="earn_top2" />
           
           {/* DYNAMIC TASKS */}
           {dynamicTasks.length > 0 && (
@@ -260,6 +263,8 @@ export const Earn: React.FC = () => {
             </div>
           )}
 
+          <AdBanner slot="earn_bottom" className="my-8" />
+          <AdBanner slot="earn_bottom2" className="my-8" />
         </div>
       )}
 

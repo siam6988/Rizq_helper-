@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Coins, Users, Zap } from 'lucide-react';
+import { AdBanner } from '../components/AdBanner';
 
 export const About: React.FC = () => {
   return (
@@ -9,6 +10,8 @@ export const About: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto space-y-8 pb-10"
     >
+      <AdBanner slot="about_top" className="mb-6" />
+
       <div className="text-center mb-12">
         <h1 className="text-5xl font-black text-white drop-shadow-[0_5px_15px_rgba(16,185,129,0.3)] mb-4">
           About RizQ <span className="text-primary-light">Helper</span>
@@ -28,6 +31,8 @@ export const About: React.FC = () => {
         </p>
       </div>
 
+      <AdBanner slot="about_mid1" className="mb-6" />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-black/30 p-8 rounded-3xl border border-white/5">
           <Shield className="w-12 h-12 text-primary-light mb-4" />
@@ -42,6 +47,9 @@ export const About: React.FC = () => {
           <p className="text-text-dim">
             No middleman fees inflating the cost. We pass the majority of advertising revenue directly to the users completing the tasks.
           </p>
+        </div>
+        <div className="md:col-span-2">
+          <AdBanner slot="about_mid2" className="" />
         </div>
         <div className="bg-black/30 p-8 rounded-3xl border border-white/5">
           <Users className="w-12 h-12 text-blue-400 mb-4" />
@@ -58,6 +66,8 @@ export const About: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <AdBanner slot="about_bottom" className="mt-8" />
     </motion.div>
   );
 };

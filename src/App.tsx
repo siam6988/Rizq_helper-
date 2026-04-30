@@ -24,6 +24,8 @@ import { Privacy } from './pages/Privacy';
 import { Contact } from './pages/Contact';
 import { Store } from './pages/Store';
 
+import { AdBanner } from './components/AdBanner';
+
 // Layout wrapper for authenticated routes mapping
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -38,9 +40,10 @@ const LayoutContainer = ({ children }: { children: React.ReactNode }) => {
     <>
       <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(false)} />
-      <main className="max-w-6xl mx-auto p-5 py-10 relative z-10">
+      <main className="max-w-6xl mx-auto p-5 py-10 relative z-10 pb-24">
         {children}
       </main>
+      <AdBanner sticky={true} />
     </>
   );
 };

@@ -5,6 +5,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { AdBanner } from '../components/AdBanner';
 
 export const Contact: React.FC = () => {
   const { user } = useAuth();
@@ -47,6 +48,8 @@ export const Contact: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto pb-10"
     >
+      <AdBanner slot="contact_top" className="mb-6" />
+
       <div className="text-center mb-10">
         <h1 className="text-4xl font-black text-white mb-4">Contact Us</h1>
         <p className="text-text-dim text-lg">Have a question or need support? We're here to help.</p>
@@ -71,6 +74,8 @@ export const Contact: React.FC = () => {
               ads@rizqhelper.app
             </a>
           </div>
+
+          <AdBanner slot="contact_left" className="h-40" />
         </div>
 
         <div className="col-span-1 md:col-span-2">
@@ -126,8 +131,13 @@ export const Contact: React.FC = () => {
               </button>
             </div>
           </form>
+
+          <AdBanner slot="contact_right_bottom" className="mt-6" />
         </div>
       </div>
+
+      <AdBanner slot="contact_bottom" className="mt-8" />
+      <AdBanner slot="contact_bottom2" className="mt-6" />
     </motion.div>
   );
 };

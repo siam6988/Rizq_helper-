@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { isHaram } from '../utils/haramBlocker';
 import { z } from 'zod';
+import { AdBanner } from '../components/AdBanner';
 
 const advertiserSchema = z.object({
   adTitle: z.string().min(5, "Title must be at least 5 characters"),
@@ -115,6 +116,8 @@ export const Advertiser: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="glass-card max-w-2xl mx-auto p-10 rounded-3xl"
     >
+      <AdBanner slot="advertiser_top" className="mb-6" />
+
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)]">P2P Halal Task Board</h2>
@@ -127,6 +130,8 @@ export const Advertiser: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <AdBanner slot="advertiser_mid1" className="mb-6" />
 
       <div className="bg-black/30 p-6 rounded-2xl border border-white/10 mb-8">
         <h3 className="text-white font-bold mb-4">Create New Campaign</h3>
@@ -238,7 +243,12 @@ export const Advertiser: React.FC = () => {
             </button>
           </div>
         </form>
+
+        <AdBanner slot="advertiser_mid2" className="mt-8" />
       </div>
+
+      <AdBanner slot="advertiser_bottom1" className="mt-6" />
+      <AdBanner slot="advertiser_bottom2" className="mt-6" />
 
     </motion.div>
   );

@@ -64,7 +64,51 @@ export const CPAOffers: React.FC = () => {
       <AdBanner slot="cpa_top_banner" className="h-24 w-full mb-8" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {DUMMY_OFFERS.map((offer, index) => (
+        {DUMMY_OFFERS.slice(0, 2).map((offer, index) => (
+          <motion.div
+            key={offer.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="glass-card flex flex-col rounded-3xl p-6 border border-white/10 hover:border-primary-light/30 transition-all group relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Briefcase size={64} />
+            </div>
+            
+            <div className="mb-4 relative z-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary-light bg-primary-light/10 px-3 py-1 rounded-full">
+                {offer.provider}
+              </span>
+            </div>
+            
+            <h3 className="text-xl font-bold text-white mb-2 relative z-10">{offer.title}</h3>
+            <p className="text-sm text-text-dim mb-6 flex-grow relative z-10 line-clamp-3">
+              {offer.description}
+            </p>
+
+            <div className="border-t border-white/10 pt-4 flex items-center justify-between mt-auto relative z-10">
+              <div>
+                <p className="text-xs text-text-dim font-bold uppercase tracking-wider">Reward</p>
+                <p className="text-xl font-black text-yellow-500 drop-shadow-[0_2px_5px_rgba(234,179,8,0.3)]">
+                  +{Number(offer.reward || 0).toFixed(2)} ISLM
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedOffer(offer)}
+                className="bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-colors text-white"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <AdBanner slot="cpa_mid_banner" className="h-28 w-full mt-6" />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        {DUMMY_OFFERS.slice(2).map((offer, index) => (
           <motion.div
             key={offer.id}
             initial={{ opacity: 0, y: 20 }}
@@ -106,6 +150,7 @@ export const CPAOffers: React.FC = () => {
       </div>
 
       <AdBanner slot="cpa_bottom_banner" className="h-40 w-full mt-8" />
+      <AdBanner slot="cpa_footer_banner" className="h-24 w-full mt-6" />
 
       <CPAModal 
         isOpen={!!selectedOffer}
