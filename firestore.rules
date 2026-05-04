@@ -47,22 +47,23 @@ service cloud.firestore {
     // User Earnings Collection inside users
     match /users/{userId}/earnings/{earningId} {
         // Users can only read their own earnings
-        allow read: if isOwner(userId);
+        allow read: if isOwner(userId) || isAdmin();
         
-        // Writes are ONLY allowed from the secure backend Server Actions! 
-        allow write: if false; 
+        // Writes are ONLY allowed from the secure backend Server Actions or Admin! 
+        allow write: if isAdmin(); 
     }
 
     // Users Collection
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
       
       allow create: if isOwner(userId) && isValidUser(incoming());
 
-      // Only allow user to update specific profile fields, NEVER balance or tasks
-      allow update: if isOwner(userId) &&
+      // Allow user to update specific profile fields
+      // Allow Admin to update anything
+      allow update: if isAdmin() || (isOwner(userId) &&
         isValidUser(incoming()) &&
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'country', 'fingerprints', 'lastLogin']);
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'country', 'fingerprints', 'lastLogin']));
 
       allow delete: if false; // Users cannot delete their core account object
     }
@@ -100,7 +101,7 @@ service cloud.firestore {
     // Pending CPA Approvals Collection
     match /pending_cpa_approvals/{cpaId} {
       // Users can view their own pending approvals
-      allow read: if isSignedIn() && existing().userId == request.auth.uid;
+      allow read: if (isSignedIn() && existing().userId == request.auth.uid) || isAdmin();
       
       // Users can submit proof
       allow create: if isSignedIn() &&
@@ -109,7 +110,22 @@ service cloud.firestore {
         incoming().proof is string && incoming().proof.size() <= 2000 &&
         incoming().status == 'pending';
         
-      allow update, delete: if false;
+      allow update, delete: if isAdmin();
+    }
+
+    // --- Premium Bounties ---
+    match /bounties/{bountyId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+    }
+
+    match /pending_bounty_proofs/{proofId} {
+        allow read: if (isSignedIn() && existing().uid == request.auth.uid) || isAdmin();
+        allow create: if isSignedIn() &&
+          incoming().keys().hasAll(['uid', 'userEmail', 'task_id', 'task_title', 'text_proof', 'image_url', 'reward', 'status', 'submittedAt']) &&
+          incoming().uid == request.auth.uid &&
+          incoming().status == 'pending';
+        allow update, delete: if isAdmin();
     }
 
     match /contact_messages/{messageId} {

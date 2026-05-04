@@ -162,7 +162,63 @@ export const Earn: React.FC = () => {
             ))}
         </div>
       ) : activeTasks.length === 0 ? (
-        <div className="text-text-dim text-lg text-center p-10 glass-card rounded-2xl border-dashed border-2 border-white/20">No tasks available for your country right now. Come back later!</div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 260,
+            damping: 20
+          }}
+          className="flex flex-col items-center justify-center p-12 glass-card rounded-3xl border-dashed border-2 border-primary-light/30 text-center gap-6"
+        >
+          <motion.div 
+            animate={{ 
+              y: [0, -10, 0],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ 
+              duration: 4, 
+              repeat: Infinity,
+              ease: "easeInOut" 
+            }}
+            className="relative"
+          >
+            {/* Cute anime character */}
+            <div className="w-40 h-40 bg-gradient-to-tr from-primary-light/20 to-primary-dark/20 rounded-full flex items-center justify-center mb-4 relative overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+               <img 
+                 src="/anime_character.png" 
+                 alt="Cute Anime Character" 
+                 className="w-full h-full object-cover scale-125" 
+                 onError={(e) => { 
+                    e.currentTarget.src = 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cheer'; 
+                    e.currentTarget.className = 'w-full h-full object-cover p-4'; 
+                 }} 
+               />
+               <motion.div 
+                  animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute inset-0 border-4 border-yellow-400 rounded-full mix-blend-overlay"
+               />
+            </div>
+            {/* Sparkles */}
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} className="absolute text-yellow-400 text-2xl -top-2 -left-4">✨</motion.span>
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} className="absolute text-yellow-400 text-xl top-4 -right-6">🌟</motion.span>
+            <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} className="absolute text-yellow-400 text-lg bottom-4 -left-6">✨</motion.span>
+          </motion.div>
+
+          <div>
+            <h3 className="text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(16,185,129,0.5)] mb-2">
+              Sugoi! You did it! 🎉
+            </h3>
+            <p className="text-emerald-300 font-bold mb-1 border-b border-emerald-500/30 pb-2 inline-block">
+              All tasks completed! You are amazing! 💖
+            </p>
+            <p className="text-text-dim text-sm max-w-sm mx-auto mt-4 px-4 leading-relaxed">
+              New tasks will appear when advertisers create them or after your 24h reset period. Take a break and come back later!
+            </p>
+          </div>
+        </motion.div>
       ) : (
         <div className="space-y-10">
           <AdBanner slot="earn_top2" />
@@ -279,8 +335,8 @@ export const Earn: React.FC = () => {
             <div className="w-16 h-16 bg-primary-light/20 rounded-full flex items-center justify-center text-primary-light mb-6 mx-auto">
                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
             </div>
-            <h3 className="text-2xl font-black text-white mb-2 text-center">Ready to Deploy?</h3>
-            <p className="text-text-dim mb-8 text-center font-medium">To earn your reward, you must keep the target window open and stay active for <span className="text-white font-bold">{confirmTask.duration} seconds</span>.</p>
+            <h3 className="text-2xl font-black text-white mb-2 text-center">Are you sure?</h3>
+            <p className="text-text-dim mb-8 text-center font-medium">Do you want to start this mission? To earn your reward, you must keep the target window open and stay active for <span className="text-white font-bold">{confirmTask.duration} seconds</span>.</p>
             <div className="flex gap-4 w-full">
                <button 
                  onClick={() => setConfirmTask(null)} 

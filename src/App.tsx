@@ -22,7 +22,8 @@ import { Membership } from './pages/Membership';
 import { About } from './pages/About';
 import { Privacy } from './pages/Privacy';
 import { Contact } from './pages/Contact';
-import { Store } from './pages/Store';
+import { Bounties } from './pages/Bounties';
+import { AdminBountyModerator } from './pages/AdminBountyModerator';
 
 import { AdBanner } from './components/AdBanner';
 
@@ -33,7 +34,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <>{children}</> : <Navigate to="/" />;
 };
 
+import { DesktopMate } from './components/DesktopMate';
+
 const LayoutContainer = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -44,6 +48,7 @@ const LayoutContainer = ({ children }: { children: React.ReactNode }) => {
         {children}
       </main>
       <AdBanner sticky={true} />
+      {user && <DesktopMate />}
     </>
   );
 };
@@ -79,7 +84,8 @@ export default function App() {
                 <Route path="/membership" element={<PrivateRoute><Membership /></PrivateRoute>} />
                 <Route path="/cpa-offers" element={<PrivateRoute><CPAOffers /></PrivateRoute>} />
                 <Route path="/offerwalls" element={<PrivateRoute><Offerwalls /></PrivateRoute>} />
-                <Route path="/store" element={<Store />} />
+                <Route path="/bounties" element={<PrivateRoute><Bounties /></PrivateRoute>} />
+                <Route path="/admin/bounties" element={<PrivateRoute><AdminBountyModerator /></PrivateRoute>} />
               </Routes>
             </LayoutContainer>
           </BrowserRouter>

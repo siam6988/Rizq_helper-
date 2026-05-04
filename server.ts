@@ -4,11 +4,6 @@ import { z } from 'zod';
 import { adminDb, adminAuth } from './src/services/firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import path from 'path';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder_key', {
-  apiVersion: '2023-10-16' as any
-});
 
 // Schema for request validation
 const ClaimRewardSchema = z.object({
@@ -320,33 +315,6 @@ async function startServer() {
     } catch(e: any) {
       console.error("Referral stats error:", e);
       return res.status(500).json({ error: "Failed to fetch referral stats" });
-    }
-  });
-
-  // === MANUAL CRYPTO DEPOSIT ===
-  app.post('/api/submit-deposit', async (req, res) => {
-    try {
-      const { uid, amountISLM, txHash } = req.body;
-      if (!uid || !amountISLM || amountISLM < 10) return res.status(400).json({ error: "Invalid amount. Minimum 10 ISLM" });
-      if (!txHash || txHash.length < 10) return res.status(400).json({ error: "Invalid Transaction Hash" });
-      
-      const logRef = adminDb.collection('deposits').doc(txHash);
-      const logDoc = await logRef.get();
-      if (logDoc.exists) {
-         return res.status(400).json({ error: "Transaction already submitted" });
-      }
-
-      await logRef.set({
-         uid,
-         amountISLM,
-         txHash,
-         status: 'pending', // Admins will review this manually or via a bot later
-         timestamp: Date.now()
-      });
-
-      res.json({ success: true, message: "Deposit submitted for review" });
-    } catch(e: any) {
-      res.status(500).json({ error: e.message });
     }
   });
 

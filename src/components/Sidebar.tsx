@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { auth } from '../services/firebase';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, Wallet, CreditCard, Users, User, LogOut, X, Trophy, Megaphone, Crown, Target } from 'lucide-react';
+import { LayoutDashboard, Wallet, CreditCard, Users, User, LogOut, X, Trophy, Megaphone, Crown, Target, Briefcase, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> = ({ isOpen, toggleSidebar }) => {
@@ -34,6 +34,12 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> =
         <NavLink to="/earn" onClick={toggleSidebar} className={navClass}>
           <Wallet size={20} /> Earn Station
         </NavLink>
+        <NavLink to="/bounties" onClick={toggleSidebar} className={navClass}>
+          <Briefcase size={20} /> Bounty Station
+        </NavLink>
+        <NavLink to="/admin/bounties" onClick={toggleSidebar} className={navClass}>
+          <ShieldCheck size={20} /> Moderator
+        </NavLink>
         <NavLink to="/offerwalls" onClick={toggleSidebar} className={navClass}>
           <CreditCard size={20} /> Offerwalls
         </NavLink>
@@ -45,9 +51,6 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggleSidebar: () => void }> =
         </NavLink>
         <NavLink to="/cpa-offers" onClick={toggleSidebar} className={navClass}>
           <Target size={20} /> CPA Offers
-        </NavLink>
-        <NavLink to="/store" onClick={toggleSidebar} className={navClass}>
-          <CreditCard size={20} /> Purchase ISLM
         </NavLink>
         <NavLink to="/withdraw" onClick={toggleSidebar} className={navClass}>
           <CreditCard size={20} /> Withdraw

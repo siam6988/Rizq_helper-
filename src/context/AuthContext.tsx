@@ -73,8 +73,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const initTelegramAuth = async () => {
-      const twaUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
-      if (twaUser) {
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg && tg.initDataUnsafe?.user) {
+        tg.ready();
+        const twaUser = tg.initDataUnsafe.user;
         try {
           const res = await fetch('/api/auth/telegram', {
             method: 'POST',
